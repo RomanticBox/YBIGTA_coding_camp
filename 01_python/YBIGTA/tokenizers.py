@@ -1,43 +1,23 @@
 from typing import Optional, Union, List
-
-class Tokenizer:
-    def __init__(self, corpus: Optional[Union[List[str], str]] = None):
-        self.corpus = corpus
-        self.tokens = []
-
-    def get_corpus(self):
-        return self.corpus
-
-    def add_corpus(self, corpus: Optional[Union[List[str], str]] = None) -> None:
-        if corpus is not None:
-            if isinstance(self.corpus, str):
-                self.corpus = [self.corpus]
-
-            if isinstance(corpus, str):
-                self.corpus.append(corpus)
-            else:
-                self.corpus += corpus
-    
-    def train(self, n_iter: int) -> None:
-        pass
-
-    def tokenize(self,
-                 text: Union[List[str], str],
-                 padding: bool = False,
-                 max_length: Optional[int] = None
-    ) -> Union[List[List[int]], List[int]]:
-        # Need to convert text to token
-        
-
-        # Need to convert from token to token ID
-
-
-        # Need to add padding token if necessary
+from tokenizer import Tokenizer
 
 class BPETokenizer(Tokenizer):
     def __init__(self, corpus: Optional[Union[List[str], str]] = None):
         super().__init__(corpus)
 
+    def train(self, n_iter: int) -> None:
+        if not isinstance(n_iter, int) or n_iter < 1:
+            raise TypeError('number of iterations (n_iter) needs to be a positive integer')
+        
+        for _ in range(n_iter):
+            self.merge()
+
+    def merge(self):
+        pass
+
 class WordTokenizer(Tokenizer):
     def __init__(self, corpus: Optional[Union[List[str], str]] = None):
         super().__init__(corpus)
+
+    def train(self, n_iter: int = 1) -> None:
+        pass
