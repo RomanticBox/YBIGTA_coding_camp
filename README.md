@@ -11,3 +11,9 @@ TODO (until 01.15)
 Whole sequence
 Preprocessor / Tokenizer / Main.py / Word / BPE / (With Error Dealing)
  -> after these : Adding decorator and enhancing readability.
+
+TODO (until 01.16.)
+
+보고서 작성
+BPE / Word tokenizer (완성)
+Preprocssor complete (for문 써서 white space 제거)
