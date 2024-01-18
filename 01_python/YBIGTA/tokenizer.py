@@ -1,7 +1,9 @@
 from typing import Optional, Union, List
 
 class Tokenizer:
-    def __init__(self, corpus: Optional[Union[List[str], str]] = None):
+    def __init__(self, 
+                 corpus: Optional[Union[List[str], str]] = None
+    ) -> None:
         '''
         Args:
             corpus (List[str], str): preprocessed string
@@ -12,6 +14,22 @@ class Tokenizer:
         self.word_freq = {}
         if corpus is not None:
             self.add_corpus(corpus)
+
+    def __call__(self,
+                 text: Union[List[str], str],
+                 padding: bool = False,
+                 max_length: Optional[int] = None
+    ) -> Union[List[List[int]], List[int]]:
+        '''
+        Tokenize the input text into a list of token IDs
+        Args:
+            text (List[str], str): preprocessed text
+            padding (bool): whether or not to add padding token
+            max_length (int): maximum length of list of tokens
+        Return:
+            List of token IDs from input text
+        '''
+        return self.tokenize(text, padding, max_length)
 
     def add_corpus(self, 
                    corpus: Optional[Union[List[str], str]] = None
