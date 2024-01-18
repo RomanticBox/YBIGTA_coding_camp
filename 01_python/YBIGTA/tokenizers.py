@@ -114,8 +114,26 @@ class BPETokenizer(Tokenizer):
 
 
 class WordTokenizer(Tokenizer):
-    def __init__(self, corpus: Optional[Union[List[str], str]] = None):
+    def __init__(self, 
+                 corpus: Optional[Union[List[str], str]] = None
+    ) -> None:
+        '''
+        Args:
+            corpus (List[str], str): preprocessed string
+        Returns:
+            None
+        '''
         super().__init__(corpus)
 
-    def train(self, n_iter: int = 1) -> None:
-        pass
+    def train(self, *args, **kwargs) -> None:
+        '''
+        Create tokens by splitting corpus by whitespace
+        Args:
+            *args, **kwargs: In order to handle args and kwargs
+        Returns:
+            None
+        '''
+        self.tokens = []
+        for text in self.corpus:
+            self.tokens += text.split()
+        self.tokens.append('*')
