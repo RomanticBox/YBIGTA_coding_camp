@@ -1,53 +1,98 @@
 import re
 
-class Preprocessor(type='str'):
-    @staticmethod
-    def __init__(self, input_string):
+class Preprocessor:
+    def __init__(self,
+                 input_string=None):
+        '''
+        Args:
+            input_string: input string, default is None
+        Returns:
+            None
+        '''
         self.input_string = input_string
-        self.split_alphabet = ['^a-zA-Z\d\s:']
+        self.complement_alphabet = r' [`\-=[];,./~!@#$%^&*()_+{\}|:"<>?]'
+        self.combined_alphabet = f'{self.complement_alphabet}'
+        
+    def split_string(self, input_string) -> list[str]:
+        '''
+        Basic preprocessing for input string
+        and return list of strings
+        Args:
+            input_string: input string, recommended to be string,
+                        but edge case handling codes included.
+        Returns:
+            preprocess_list: list of strings after preprocessing
+        '''
+        preprocess_list = []
 
-    @staticmethod
-    def split_string(self, input_string):
-        if input_string[-4:] =='.txt':
+        # change list as string
+        if isinstance(input_string, list):
+            input_string = input_string[0]
+        
+        # change file as string
+        if input_string.endswith('.txt') \
+            or input_string.endswith('.story') \
+            or input_string.endswith('.data'):
             try:
-                txt_to_str = open(input_string, 'r').read()
+                txt_to_str = open(input_string, 'r', encoding='utf-8').read()
                 input_string = txt_to_str
             except FileNotFoundError:
-                print(f'FileNotFoundError: {input_string} is not in the directory.
+                print(f'FileNotFoundError: {input_string} is not in the directory. \
                         Please check the file name and the directory.')
-        preprocess_list = []
-        input_string = input_string.lower()
-        # all possible cases for split
-        input_string = input_string.split(self.split_alphabet)
         
-        for i in range(len(input_string)):
-            if "'" in input_string[i]:
-                first, second = self.single_quote_handle(input_string[i])
+        input_string = input_string.lower() # Remove capital letters.
+
+        # Rll possible cases for split
+        input_string = re.split(r'[' + re.escape(self.complement_alphabet) + ']', input_string)
+        
+        # Remove empty strings
+        temp_string = []
+        for s in input_string:
+            if s != '':
+                temp_string.append(s)
+        input_string = temp_string
+        
+        # Remove special characters
+        for i in input_string:
+            if "'" in i:
+                first, second = self.single_quote_handle(i)
                 preprocess_list.append(first)
-                if not second:
+
+                if second is not None:
                     preprocess_list.append(second)
             else:
-                preprocess_list.append(input_string[i].split(input_string[i]))
-            preprocess_list[-1] += '<\w>'
-            preprocess_list[-1] = list(preprocess_list[-1])
-            preprocess_list[-1] = " ".join(preprocess_list[-1])
-        
+                preprocess_list.append(i)
+
+            # Add blank space between each words and add <\w> at the end of each words.
+            preprocess_list[-1] = " ".join(list(preprocess_list[-1]))
+            tmp = preprocess_list[-1] + ' <\w>'
+            preprocess_list[-1] = tmp
         return preprocess_list
-    # [^a-zA-Z\d\s:]
 
     @staticmethod
-    def single_quote_handle(self, single_string):
+    def single_quote_handle(single_string) -> tuple[str, str]:
         ''' Handling with single quotation mark ( ' )
         divide cases, and divide the words by each cases
+        Args:
+            single_string: string that contains single quotation mark ( ' )
+        Returns:
+            first: first part of the word
+            second: second part of the word (possible to be None)
         '''
-        
+        first = single_string
+        second = None
+
+        # Remove normal [ ' ] from the word
         while "'" in single_string:
             if single_string.startswith("'"):
                 single_string = single_string[1:]
-            elif single_string.endswith("'"):
+            elif (single_string.endswith("'") \
+                and not single_string.endswith("s'")):
                 single_string = single_string[:-1]
             else:
                 break
+        
+        # Handle with edge cases
         if "'" in single_string:
             if single_string.endswith("n't") \
                 or single_string.endswith("'ve") \
@@ -58,17 +103,19 @@ class Preprocessor(type='str'):
             
             elif single_string.endswith("'d") \
                 or single_string.endswith("'m") \
-                or single_string.endswith("'s"):
+                or single_string.endswith("'s") \
+                or single_string.endswith("s'"):
                 first = single_string[:-2]
                 second = single_string[-2:]
-            return first, second
         else:
-            print(f'special case that does not fit in the cases: 
-                    {single_string}')
-            return single_string, None
+            print(f'special case that does not fit in ordinary cases: \
+                  {single_string}')
+            first = single_string
+            second = None
+        return first, second
             
     @staticmethod
-    def letter_splitter(self, word):
+    def letter_splitter(word):
         ''' split the word by each letter
         '''
         return [char for char in word]
