@@ -3,6 +3,7 @@ import os, tarfile
 from urllib.request import urlretrieve
 from typing import Optional
 
+from YBIGTA.preprocessor import Preprocessor
 from YBIGTA.tokenizers import BPETokenizer, WordTokenizer
 
 
@@ -18,7 +19,7 @@ def load_corpus(
         tarfile.open(dl_name).extractall()
 
     ls = os.listdir(text_dir)[:n]
-    dir_to_text = lambda f: open(text_dir + f).read()
+    dir_to_text = lambda f: open(text_dir + f, encoding='utf-8').read()
     dataset = [*map(dir_to_text, ls)]
     return dataset
 
@@ -36,6 +37,11 @@ if __name__ == "__main__":
 
     corpus = load_corpus(n=n_corpus)
 
+    if corpus is not None:
+        preprocessor_instance = Preprocessor()
+        preprocessor_instance.input_string = corpus
+        preprocessed_text = preprocessor_instance.split_string(corpus)
+
     SelectedTokenizer = BPETokenizer if use_bpe else WordTokenizer
     tokenizer = SelectedTokenizer(corpus[:n_corpus//2])
     tokenizer.add_corpus(corpus[n_corpus//2:])
@@ -47,4 +53,3 @@ if __name__ == "__main__":
         max_length=1024
     )
     print(input_ids)
-
