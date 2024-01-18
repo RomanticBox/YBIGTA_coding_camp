@@ -1,4 +1,4 @@
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Tuple, Dict
 from YBIGTA.tokenizer import Tokenizer
 
 class BPETokenizer(Tokenizer):
@@ -35,12 +35,23 @@ class BPETokenizer(Tokenizer):
 
         for _ in range(n_iter):
             pairs_freq, pairs_idx = self.get_stats()
-            max_pair = max(pairs_freq, key = pairs_freq.get)
-            self.word_freq = self.merge(max_pair, pairs_idx[max_pair])
+            if len(pairs_freq) == 0:
+                break
+            else:
+                max_pair = max(pairs_freq, key = pairs_freq.get)
+                self.word_freq = self.merge(max_pair, pairs_idx[max_pair])
 
         self.create_tokens()
 
-    def get_stats(self):
+    def get_stats(self) -> tuple[Dict[tuple[str, str], int], Dict[tuple[str, str], List[List[int]]]]:
+        '''
+        Count the number of occurrences of pairs and store their indices
+        Args:
+            None
+        Returns:
+            pairs_freq (Dict[tuple[str, str], int]): frequency of pairs
+            pairs_idx (Dict[tuple[str, str], List[List[int]]]): indices of pairs
+        '''
         pairs_freq, pairs_idx = {}, {}
         for i, (word, freq) in enumerate(self.word_freq.items(), 0):
             symbols = word.split()
@@ -53,7 +64,18 @@ class BPETokenizer(Tokenizer):
                 pairs_idx[cur_pair].append([i, j])
         return pairs_freq, pairs_idx
     
-    def merge(self, max_pair, indices):
+    def merge(self, 
+              max_pair: tuple[str, str], 
+              indices: List[List[int]]
+    ) -> Dict[str, int]:
+        '''
+        Merge the most frequent pairs
+        Args:
+            max_pair (tuple[str, str]): the most frequent pairs
+            indices (List[List[int]]): indices of max_pair
+        Returns:
+            new_word_freq (Dict[str, int]): new word_freq
+        '''
         idx = 0
         new_word_freq = {}
         for i, (word, value) in enumerate(self.word_freq.items()):
@@ -74,7 +96,14 @@ class BPETokenizer(Tokenizer):
         
         return new_word_freq
     
-    def create_tokens(self):
+    def create_tokens(self) -> None:
+        '''
+        Extract tokens after training
+        Args:
+            None
+        Returns:
+            None
+        '''
         self.tokens = []
         for word in self.word_freq:
             symbols = word.split()
