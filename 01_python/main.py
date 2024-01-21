@@ -37,11 +37,6 @@ if __name__ == "__main__":
 
     corpus = load_corpus(n=n_corpus)
 
-    if corpus is not None:
-        preprocessor_instance = Preprocessor()
-        preprocessor_instance.input_string = corpus
-        preprocessed_text = preprocessor_instance.split_string(corpus)
-
     SelectedTokenizer = BPETokenizer if use_bpe else WordTokenizer
     tokenizer = SelectedTokenizer(corpus[:n_corpus//2])
     tokenizer.add_corpus(corpus[n_corpus//2:])

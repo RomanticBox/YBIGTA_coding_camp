@@ -1,4 +1,5 @@
 from typing import Optional, Union, List
+from YBIGTA.preprocessor import Preprocessor
 
 class Tokenizer:
     def __init__(self, 
@@ -6,12 +7,13 @@ class Tokenizer:
     ) -> None:
         '''
         Args:
-            corpus (List[str], str): preprocessed string
+            corpus (List[str], str)
         Returns:
             None
         '''
         self.corpus = []
         self.word_freq = {}
+        self.preprocessor = Preprocessor()
         if corpus is not None:
             self.add_corpus(corpus)
 
@@ -23,7 +25,7 @@ class Tokenizer:
         '''
         Tokenize the input text into a list of token IDs
         Args:
-            text (List[str], str): preprocessed text
+            text (List[str], str)
             padding (bool): whether or not to add padding token
             max_length (int): maximum length of list of tokens
         Return:
@@ -37,7 +39,7 @@ class Tokenizer:
         '''
         Add corpus to self.corpus and update word_freq
         Args:
-            corpus (List[str], str): preprocessed string
+            corpus (List[str], str)
         Returns:
             None
         '''
@@ -78,13 +80,12 @@ class Tokenizer:
         '''
         Tokenize the input text into a list of token IDs
         Args:
-            text (List[str], str): preprocessed text
+            text (List[str], str)
             padding (bool): whether or not to add padding token
             max_length (int): maximum length of list of tokens
         Return:
             List of token IDs from input text
         '''
-        print(text)
         # Need to convert text to token and truncate if necessary
         text_tokens = []
         if isinstance(text, str):
@@ -95,13 +96,10 @@ class Tokenizer:
         else:
             raise TypeError('text is neither a string nor a list of strings')
         
-        print(text_tokens)
-
         # Need to convert from token to token ID
         text_tokenIDs = []
         for word_tokens in text_tokens:
             text_tokenIDs.append(self.tokens_to_tokenIDs(word_tokens))
-
 
         # Need to add padding token if necessary
         if padding:
@@ -113,21 +111,19 @@ class Tokenizer:
                 for _ in range(max_length_word_tokens - len(text_tokenIDs[i])):
                     text_tokenIDs[i].append(token_padding)
         
-        print(text_tokenIDs)
-
         return text_tokenIDs
 
     def text_to_words(self, 
                       text: str
     ) -> List[str]:
         '''
-        Split the text into words based on whitespace and punctuation (not necessary rule)
+        Split the text into words
         Args:
             text (str): preprocessed text
         Return:
             List of words splitted from text
         '''
-        return text.split()
+        raise NotImplementedError
 
     def text_to_tokens(self, 
                        text: str, 

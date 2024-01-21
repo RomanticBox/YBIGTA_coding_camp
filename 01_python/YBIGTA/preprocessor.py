@@ -1,21 +1,62 @@
 import re
+from typing import Optional, Union, List
 
 class Preprocessor:
-    def __init__(self,
-                 input_string=None):
+    def __init__(self) -> None:
         '''
         Args:
-            input_string: input string, default is None
+            None
         Returns:
             None
         '''
-        self.input_string = input_string
+
         self.complement_alphabet = r' [`\-=[];,./~!@#$%^&*()_+{\}|:"<>?]'
         self.combined_alphabet = f'{self.complement_alphabet}'
-        
-    def split_string(self, input_string) -> list[str]:
+
+    def split_string(self,
+                     input_string: Union[List[str], str]
+    ) -> List[str]:
         '''
-        Basic preprocessing for input string
+        Basic preprocessing for input string without rule
+        Args:
+            input_string (List[str], str)
+        Returns:
+            preprocessed_input_string (str)
+        '''
+        # Convert str to List[str] if necessary
+        if isinstance(input_string, list):
+            pass
+        elif isinstance(input_string, str):
+            input_string = [input_string]
+        else:
+            raise TypeError('input_string is neither a string nor a list of strings')
+
+        # Remove capital letters
+        for i in range(len(input_string)):
+            input_string[i] = input_string[i].lower()
+
+        # Rll possible cases for split
+        for i in range(len(input_string)):
+            input_string[i] = input_string[i].split()
+            input_string[i] = " ".join(input_string[i])
+            input_string[i] = re.split(r'[' + re.escape(self.complement_alphabet) + ']', input_string[i])
+
+        # Remove empty strings
+        temp_string = []
+        for i in range(len(input_string)):
+            temp_string.append([])
+            for s in input_string[i]:
+                if s != '':
+                    temp_string[i].append(s)
+
+        preprocessed_string = temp_string
+        return preprocessed_string
+        
+    def split_string_with_rule(self, 
+                     input_string: Union[List[str], str]
+    ) -> List[str]:
+        '''
+        Basic preprocessing for input string with rule
         and return list of strings
         Args:
             input_string: input string, recommended to be string,
@@ -23,50 +64,27 @@ class Preprocessor:
         Returns:
             preprocess_list: list of strings after preprocessing
         '''
+        input_string = self.split_string(input_string)
+
+        # Remove special characters
         preprocess_list = []
 
-        # change list as string
-        if isinstance(input_string, list):
-            input_string = input_string[0]
-        
-        # change file as string
-        if input_string.endswith('.txt') \
-            or input_string.endswith('.story') \
-            or input_string.endswith('.data'):
-            try:
-                txt_to_str = open(input_string, 'r', encoding='utf-8').read()
-                input_string = txt_to_str
-            except FileNotFoundError:
-                print(f'FileNotFoundError: {input_string} is not in the directory. \
-                        Please check the file name and the directory.')
-        
-        input_string = input_string.lower() # Remove capital letters.
+        for i in range(len(input_string)):
+            preprocess_list.append([])
+            for word in input_string[i]:
+                if "'" in word:
+                    first, second = self.single_quote_handle(word)
+                    preprocess_list[i].append(first)
 
-        # Rll possible cases for split
-        input_string = re.split(r'[' + re.escape(self.complement_alphabet) + ']', input_string)
-        
-        # Remove empty strings
-        temp_string = []
-        for s in input_string:
-            if s != '':
-                temp_string.append(s)
-        input_string = temp_string
-        
-        # Remove special characters
-        for i in input_string:
-            if "'" in i:
-                first, second = self.single_quote_handle(i)
-                preprocess_list.append(first)
-
-                if second is not None:
-                    preprocess_list.append(second)
-            else:
-                preprocess_list.append(i)
+                    if second is not None:
+                        preprocess_list[i].append(second)
+                else:
+                    preprocess_list[i].append(word)
 
             # Add blank space between each words and add <\w> at the end of each words.
-            preprocess_list[-1] = " ".join(list(preprocess_list[-1]))
-            tmp = preprocess_list[-1] + ' <\w>'
-            preprocess_list[-1] = tmp
+            preprocess_list[i] = " ".join(list(preprocess_list[i]))
+            preprocess_list[i] += ' <\w>'
+
         return preprocess_list
 
     @staticmethod
@@ -82,7 +100,7 @@ class Preprocessor:
         first = single_string
         second = None
 
-        # Remove normal [ ' ] from the word
+        # Remove normal [ ' ] from the word (quotes)
         while "'" in single_string:
             if single_string.startswith("'"):
                 single_string = single_string[1:]
@@ -92,7 +110,7 @@ class Preprocessor:
             else:
                 break
         
-        # Handle with edge cases
+        # Handle with edge cases (contractions / possessive)
         if "'" in single_string:
             if single_string.endswith("n't") \
                 or single_string.endswith("'ve") \
@@ -107,15 +125,16 @@ class Preprocessor:
                 or single_string.endswith("s'"):
                 first = single_string[:-2]
                 second = single_string[-2:]
+            else:
+                print(f'special case that does not fit in ordinary cases: \
+                        {single_string}')
         else:
-            print(f'special case that does not fit in ordinary cases: \
-                  {single_string}')
             first = single_string
             second = None
         return first, second
             
-    @staticmethod
-    def letter_splitter(word):
-        ''' split the word by each letter
-        '''
-        return [char for char in word]
+    # @staticmethod
+    # def letter_splitter(word):
+    #     ''' split the word by each letter
+    #     '''
+    #     return [char for char in word]

@@ -10,7 +10,21 @@ class BPETokenizer(Tokenizer):
         Returns:
             None
         '''
+        self.name = 'BPETokenizer'
         super().__init__(corpus)
+
+    def text_to_words(self, 
+                      text: str
+    ) -> List[str]:
+        '''
+        Split the text into words
+        Args:
+            text (str): preprocessed text
+        Return:
+            List of words splitted from text
+        '''
+        text = self.preprocessor.split_string_with_rule(text)
+        return text[0].split()
 
     def train(self, 
               n_iter: int
@@ -123,7 +137,21 @@ class WordTokenizer(Tokenizer):
         Returns:
             None
         '''
+        self.name = 'WordTokenizer'
         super().__init__(corpus)
+
+    def text_to_words(self, 
+                      text: str
+    ) -> List[str]:
+        '''
+        Split the text into words
+        Args:
+            text (str): text
+        Return:
+            List of words splitted from text
+        '''
+        text = self.preprocessor.split_string(text)
+        return text[0]
 
     def train(self, *args, **kwargs) -> None:
         '''
@@ -133,7 +161,5 @@ class WordTokenizer(Tokenizer):
         Returns:
             None
         '''
-        self.tokens = []
-        for text in self.corpus:
-            self.tokens += text.split()
+        self.tokens = list(self.word_freq.keys())
         self.tokens.append('*')
